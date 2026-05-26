@@ -118,6 +118,10 @@ void HesaiPointCloudGPU::start_stream() {
     param.decoder_param.pcap_play_in_loop = pcap_loop;
     param.decoder_param.pcap_play_synchronization = (source_type == SOURCE_PCAP);
 
+    if (!point_buffer.is_valid()) {
+        allocate_point_cloud_buffer();
+    }
+
     sdk = std::make_unique<hesai::lidar::HesaiLidarSdk<PointType>>();
     sdk->Init(param);
     sdk->RegRecvCallback([this](const hesai::lidar::LidarDecodedFrame<PointType> &frame) {
