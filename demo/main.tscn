@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://main.gd" id="1_main"]
+
+[sub_resource type="Environment" id="Environment_1"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_main")
+
+[node name="HesaiPointCloudGPU" type="HesaiPointCloudGPU" parent="."]
+max_points = 100000
+
+[node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.928, -0.371, 0, 0.371, 0.928, 0, 5, 10)

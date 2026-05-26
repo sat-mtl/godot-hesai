@@ -40,6 +40,9 @@ void HesaiPointCloudGPU::_bind_methods() {
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "correction_file_path", PROPERTY_HINT_FILE),
         "set_correction_file_path", "get_correction_file_path");
     ADD_PROPERTY(PropertyInfo(Variant::INT, "max_points"), "set_max_points", "get_max_points");
+    ClassDB::bind_method(D_METHOD("set_pcap_loop", "loop"), &HesaiPointCloudGPU::set_pcap_loop);
+    ClassDB::bind_method(D_METHOD("get_pcap_loop"), &HesaiPointCloudGPU::get_pcap_loop);
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pcap_loop"), "set_pcap_loop", "get_pcap_loop");
 
     ADD_SIGNAL(MethodInfo("point_cloud_frame",
         PropertyInfo(Variant::RID, "point_cloud_buffer"),
@@ -112,6 +115,8 @@ void HesaiPointCloudGPU::start_stream() {
     param.input_param.pcap_path = pcap_path.utf8().get_data();
     param.input_param.correction_file_path = correction_file_path.utf8().get_data();
     param.input_param.use_ptc_connected = false;
+    param.decoder_param.pcap_play_in_loop = pcap_loop;
+    param.decoder_param.pcap_play_synchronization = (source_type == SOURCE_PCAP);
 
     sdk = std::make_unique<hesai::lidar::HesaiLidarSdk<PointType>>();
     sdk->Init(param);
@@ -215,3 +220,6 @@ String HesaiPointCloudGPU::get_correction_file_path() { return correction_file_p
 
 void HesaiPointCloudGPU::set_max_points(int p_max) { max_points = p_max; }
 int HesaiPointCloudGPU::get_max_points() { return max_points; }
+
+void HesaiPointCloudGPU::set_pcap_loop(bool p_loop) { pcap_loop = p_loop; }
+bool HesaiPointCloudGPU::get_pcap_loop() { return pcap_loop; }

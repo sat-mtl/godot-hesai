@@ -60,6 +60,8 @@ public:
     String get_correction_file_path();
     void set_max_points(int p_max);
     int get_max_points();
+    void set_pcap_loop(bool p_loop);
+    bool get_pcap_loop();
 
 private:
     using PointType = hesai::lidar::LidarPointXYZI;
@@ -87,6 +89,7 @@ private:
     String pcap_path = "";
     String correction_file_path = "";
     int max_points = 100000;
+    bool pcap_loop = true;
 };
 
 VARIANT_ENUM_CAST(HesaiPointCloudGPU::SourceType);
