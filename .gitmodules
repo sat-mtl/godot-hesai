@@ -1,0 +1,6 @@
+[submodule "godot-cpp"]
+	path = godot-cpp
+	url = https://github.com/guillaumeriousat/godot-cpp.git
+[submodule "3rdparty/HesaiLidar_SDK_2.0"]
+	path = 3rdparty/HesaiLidar_SDK_2.0
+	url = https://github.com/HesaiTechnology/HesaiLidar_SDK_2.0.git
