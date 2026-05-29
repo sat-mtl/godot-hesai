@@ -10,7 +10,7 @@ set(GODOT_PROJECT_DIR "demo" CACHE STRING "The directory of a Godot project fold
 find_package(Python3 3.4 REQUIRED)
 find_program(GIT git REQUIRED)
 
-# ── godot-cpp submodule ──────────────────────────────────────────────────────
+# godot-cpp submodule
 if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/godot-cpp/src")
     message(NOTICE "godot-cpp submodule not found, initializing...")
     execute_process(
@@ -21,9 +21,10 @@ if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/godot-cpp/src")
 endif()
 add_subdirectory(godot-cpp SYSTEM)
 
-# ── HesaiLidar SDK ───────────────────────────────────────────────────────────
-# Disable the sample executables and optional features we don't need.
+# HesaiLidar SDK
+# Disable the tests.
 set(DISENABLE_TEST_CC ON CACHE BOOL "" FORCE)
+# No need for tls right now. This skips needing openssl.
 set(WITH_PTCS_USE     OFF CACHE BOOL "" FORCE)
 set(FIND_CUDA         OFF CACHE BOOL "" FORCE)
 add_subdirectory(3rdparty/HesaiLidar_SDK_2.0 SYSTEM)
@@ -62,11 +63,12 @@ set_target_properties(${LIBNAME}
 )
 
 if(LINUX)
+    # add rpath so that the linux so is found at the right places.
     set_target_properties(${LIBNAME} PROPERTIES
         LINK_FLAGS "-Wl,-rpath,./bin/linux -Wl,-rpath,./ -Wl,-rpath,./addons/godot-hesai/bin/linux")
 endif()
 
-# ── Post-build: copy into demo project ──────────────────────────────────────
+# Post-build: copy into demo project
 set(GODOT_PROJECT_BINARY_DIR "${PROJECT_SOURCE_DIR}/${GODOT_PROJECT_DIR}/bin/${GODOTCPP_PLATFORM}")
 set(BINARY_DIR "${PROJECT_SOURCE_DIR}/bin/${GODOTCPP_PLATFORM}")
 

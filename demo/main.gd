@@ -34,7 +34,7 @@ func _ready() -> void:
 	multimesh_uniform.binding = 1
 
 	# ── MultiMesh ──────────────────────────────────────────────────────────────
-	max_points = $HesaiPointCloudGPU.max_points
+	max_points = $HesaiPointCloudGPU.get_max_points()
 
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
@@ -44,42 +44,30 @@ func _ready() -> void:
 	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.albedo_color = Color(1.0, 0.55, 0.0)  # orange
 	mat.use_point_size = true
-	mat.point_size = 2.0
+	mat.point_size = 1.0
 	pmesh.material = mat
 	multimesh.mesh = pmesh
 
 	multimesh.instance_count = max_points
 
-	# Initialise with identity rotation so the basis columns are correct before the
-	# first frame arrives.  Only the position entries (indices 3, 7, 11 per instance)
-	# are updated by the compute shader; the diagonal must already be 1.
-	var buf := PackedFloat32Array()
-	buf.resize(max_points * 12)
 	for i in range(max_points):
-		var b: int = i * 12
-		buf[b]      = 1.0   # m[0][0]
-		buf[b + 3]  = -666.0  # origin x – hide until first frame
-		buf[b + 5]  = 1.0   # m[1][1]
-		buf[b + 7]  = -666.0  # origin y
-		buf[b + 10] = 1.0   # m[2][2]
-		buf[b + 11] = -666.0  # origin z
-	multimesh.buffer = buf
+		multimesh.set_instance_transform(i, Transform3D())
+
 
 	$MultiMeshInstance3D.multimesh = multimesh
 
 	# ── HesaiPointCloudGPU ────────────────────────────────────────────────────
 	$HesaiPointCloudGPU.set_rendering_device(rd)
-	$HesaiPointCloudGPU.source_type = HesaiPointCloudGPU.SOURCE_PCAP
-	$HesaiPointCloudGPU.pcap_path   = ProjectSettings.globalize_path("res://HESAI_TEST_OFFICE.pcap")
-	$HesaiPointCloudGPU.pcap_loop   = true
+	$HesaiPointCloudGPU.correction_file_path = ProjectSettings.globalize_path("res://Pandar40P_correction.csv")
 	$HesaiPointCloudGPU.point_cloud_frame.connect(_on_point_cloud_frame)
-	$HesaiPointCloudGPU.start_stream()
+	$HesaiPointCloudGPU.start_pcap_stream(ProjectSettings.globalize_path("res://HESAI_TEST_OFFICE.pcap"))
 
 # Called on the render thread (emitted via call_on_render_thread in the C++ binding).
 func _on_point_cloud_frame(buffer: RID, _hesai_bytes: PackedByteArray) -> void:
 	point_cloud_buffer_rid = buffer
 	num_points = $HesaiPointCloudGPU.get_num_points()
 	should_draw = true
+	#print(rd.buffer_get_data(buffer).to_vector3_array())
 
 func _process(_delta: float) -> void:
 	if should_draw and point_cloud_buffer_rid.is_valid() and num_points > 0:

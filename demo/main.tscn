@@ -1,6 +1,6 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=3 format=3 uid="uid://i1xhwcbntoeg"]
 
-[ext_resource type="Script" path="res://main.gd" id="1_main"]
+[ext_resource type="Script" uid="uid://du6tifb567xxe" path="res://main.gd" id="1_main"]
 
 [sub_resource type="Environment" id="Environment_1"]
 
@@ -8,12 +8,16 @@
 script = ExtResource("1_main")
 
 [node name="HesaiPointCloudGPU" type="HesaiPointCloudGPU" parent="."]
-max_points = 100000
+udp_port = 2369
+ptc_port = 9348
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="."]
+ignore_occlusion_culling = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 0.928, -0.371, 0, 0.371, 0.928, 0, 5, 10)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, -8.949682, 5.5583496, 0)
+fov = 104.905136
+size = 8.767

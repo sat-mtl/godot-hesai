@@ -15,81 +15,80 @@
 using namespace godot;
 
 class HesaiPointCloudGPU : public Node {
-    GDCLASS(HesaiPointCloudGPU, Node)
+  GDCLASS(HesaiPointCloudGPU, Node)
 
-public:
-    enum SourceType {
-        SOURCE_UDP  = hesai::lidar::DATA_FROM_LIDAR,
-        SOURCE_PCAP = hesai::lidar::DATA_FROM_PCAP,
-    };
+ protected:
+  static void _bind_methods();
 
-protected:
-    static void _bind_methods();
+ public:
+  // used to increment the PTC and UDP ports.
+  static inline int num_instances{};
 
-public:
-    ~HesaiPointCloudGPU() override;
+  static const int base_udp_port = 2368;
+  static const int base_ptc_port = 9347;
 
-    void _enter_tree() override;
-    void _exit_tree() override;
+  HesaiPointCloudGPU();
+  ~HesaiPointCloudGPU() override;
 
-    void start_stream();
-    void stop_stream();
+  void _enter_tree() override;
+  void _exit_tree() override;
 
-    void set_rendering_device(RenderingDevice *p_rd);
-    RenderingDevice *get_rendering_device();
+  void start_stream(const String& lidar_ip);
 
-    RID get_point_buffer_rid();
-    uint32_t get_num_points();
+  void start_pcap_stream(const String& pcap_path);
+  void stop_stream();
 
-    // Called on the render thread; do not call directly.
-    void update_point_cloud_buffer();
+  void set_rendering_device(RenderingDevice *p_rd);
+  RenderingDevice *get_rendering_device();
 
-    void set_source_type(int p_type);
-    int get_source_type();
-    void set_device_ip(String p_ip);
-    String get_device_ip();
-    void set_host_ip(String p_ip);
-    String get_host_ip();
-    void set_udp_port(int p_port);
-    int get_udp_port();
-    void set_ptc_port(int p_port);
-    int get_ptc_port();
-    void set_pcap_path(String p_path);
-    String get_pcap_path();
-    void set_correction_file_path(String p_path);
-    String get_correction_file_path();
-    void set_max_points(int p_max);
-    int get_max_points();
-    void set_pcap_loop(bool p_loop);
-    bool get_pcap_loop();
+  /**
+   * returns the current GPU buffer's RID.
+   * Do not store the RID, call this every time. if your node exists and reenters the tree
+   * the *RID* will have changed and its not like copying a RID is expensive.
+   */
+  RID get_point_buffer_rid();
+  uint32_t get_num_points();
 
-private:
-    using PointType = hesai::lidar::LidarPointXYZI;
+  // Called on the render thread; do not call directly.
+  void update_point_cloud_buffer();
 
-    void allocate_point_cloud_buffer();
-    void on_lidar_frame(const hesai::lidar::LidarDecodedFrame<PointType> &frame);
+  /**
+   * this will not restart the stream.
+   */
+  void set_udp_port(int p_port);
+  int get_udp_port();
+  /**
+   * this will not restart the stream.
+   */
+  void set_ptc_port(int p_port);
+  int get_ptc_port();
+  void set_correction_file_path(String p_path);
+  String get_correction_file_path();
+  void set_max_points(int p_max);
+  int get_max_points();
 
-    RID point_buffer{};
-    RenderingDevice *rd = nullptr;
+ private:
+  // TODO : Change to LidarPointXYZI.
+  using PointType = hesai::lidar::LidarPointXYZICRT;
+  void start_stream_from_params(const hesai::lidar::DriverParam &param);
+  void allocate_point_cloud_buffer();
+  void on_lidar_frame(const hesai::lidar::LidarDecodedFrame<PointType> &frame);
 
-    // Staging buffers written by the SDK thread, read on the render thread.
-    std::mutex frame_mutex;
-    PackedByteArray gpu_staging_bytes{};
-    PackedByteArray hesai_staging_bytes{};
-    std::atomic<uint32_t> current_points_num{0};
+  RID point_buffer{};
+  RenderingDevice *rd = nullptr;
 
-    std::unique_ptr<hesai::lidar::HesaiLidarSdk<PointType>> sdk;
+  // Staging buffers written by the SDK thread, read on the render thread.
+  std::mutex frame_mutex;
+  PackedByteArray point_bytes{};
+  std::atomic<uint32_t> current_points_num{0};
 
-    // Properties
-    int source_type = SOURCE_UDP;
-    String device_ip = "192.168.1.201";
-    String host_ip = "";
-    int udp_port = 2368;
-    int ptc_port = 9347;
-    String pcap_path = "";
-    String correction_file_path = "";
-    int max_points = 100000;
-    bool pcap_loop = true;
+  std::unique_ptr<hesai::lidar::HesaiLidarSdk<PointType>> sdk;
+
+  // Properties
+  int udp_port{};
+  int ptc_port{};
+  // TODO someday: auto-include the correction files for at least the P40
+  String correction_file_path = "";
+  // this is enough for a P40. Need to validate that this value is high enough if using another model.
+  const int max_points = 100000;
 };
-
-VARIANT_ENUM_CAST(HesaiPointCloudGPU::SourceType);

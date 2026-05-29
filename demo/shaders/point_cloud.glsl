@@ -24,16 +24,23 @@ layout(push_constant) uniform Params {
     int _pad1;
 } params;
 
+const int l_size_x = 64;
+const int max_workgroup_idx = 65535;
+const int max_x_idx = max_workgroup_idx * l_size_x;
+const int num_floats_per_multimesh_point = 12;
 void main() {
-    uint idx = gl_GlobalInvocationID.x;
-    if (int(idx) >= params.max_points) {
+    uint point_idx =
+      ((gl_WorkGroupID.x + gl_LocalInvocationID.x + ((l_size_x - 1) * gl_WorkGroupID.x)) +
+       gl_WorkGroupID.y * max_x_idx +
+       gl_WorkGroupID.z * max_x_idx * max_workgroup_idx);
+
+    uint multimesh_buffer_idx = point_idx * num_floats_per_multimesh_point;
+    if (int(point_idx) >= params.max_points) {
         return;
     }
 
-    uint mm_base = idx * 12u;
-
-    if (int(idx) < params.point_count) {
-        uint pc_base = idx * 3u;
+    if (int(point_idx) < params.point_count) {
+        uint pc_base = point_idx * 3u;
         float x = point_cloud.data[pc_base];
         float y = point_cloud.data[pc_base + 1u];
         float z = point_cloud.data[pc_base + 2u];
@@ -41,13 +48,13 @@ void main() {
         // Remap Hesai coordinates to Godot Y-up:
         //   Hesai: x = forward, y = left, z = up
         //   Godot: x = right,   y = up,   z = back
-        multimesh.data[mm_base + 3u]  = x;   // forward → right  (good enough for a demo)
-        multimesh.data[mm_base + 7u]  = z;   // up      → up     ✓
-        multimesh.data[mm_base + 11u] = y;   // left    → back
+        multimesh.data[multimesh_buffer_idx + 3u]  = x;   // forward → right  (good enough for a demo)
+        multimesh.data[multimesh_buffer_idx + 7u]  = z;   // up      → up     ✓
+        multimesh.data[multimesh_buffer_idx + 11u] = y;   // left    → back
     } else {
         // Exile surplus instances so they don't clutter the view.
-        multimesh.data[mm_base + 3u]  = -666.0;
-        multimesh.data[mm_base + 7u]  = -666.0;
-        multimesh.data[mm_base + 11u] = -666.0;
+        multimesh.data[multimesh_buffer_idx + 3u]  = -666.0;
+        multimesh.data[multimesh_buffer_idx + 7u]  = -666.0;
+        multimesh.data[multimesh_buffer_idx + 11u] = -666.0;
     }
 }

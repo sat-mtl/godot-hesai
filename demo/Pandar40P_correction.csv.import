@@ -1,0 +1,17 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://bmxf6igsxg0n4"
+
+[deps]
+
+files=["res://Pandar40P_correction.Elevation.translation", "res://Pandar40P_correction.Azimuth.translation"]
+
+source_file="res://Pandar40P_correction.csv"
+dest_files=["res://Pandar40P_correction.Elevation.translation", "res://Pandar40P_correction.Azimuth.translation"]
+
+[params]
+
+compress=true
+delimiter=0
