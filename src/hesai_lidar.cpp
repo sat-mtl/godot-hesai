@@ -27,7 +27,6 @@ void HesaiPointCloudGPU::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_correction_file_path"), &HesaiPointCloudGPU::get_correction_file_path);
   ClassDB::bind_method(D_METHOD("get_max_points"), &HesaiPointCloudGPU::get_max_points);
 
-  ADD_PROPERTY(PropertyInfo(Variant::STRING, "device_ip"), "set_device_ip", "get_device_ip");
   ADD_PROPERTY(PropertyInfo(Variant::INT, "udp_port"), "set_udp_port", "get_udp_port");
   ADD_PROPERTY(PropertyInfo(Variant::INT, "ptc_port"), "set_ptc_port", "get_ptc_port");
   ADD_PROPERTY(PropertyInfo(Variant::STRING, "correction_file_path", PROPERTY_HINT_FILE),
