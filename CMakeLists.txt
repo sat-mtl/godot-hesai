@@ -19,6 +19,8 @@ if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/godot-cpp/src")
         COMMAND_ERROR_IS_FATAL ANY
     )
 endif()
+
+set(GODOTCPP_USE_STATIC_CPP OFF CACHE BOOL "" FORCE)
 add_subdirectory(godot-cpp SYSTEM)
 
 # HesaiLidar SDK

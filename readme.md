@@ -9,7 +9,6 @@ Exposes a `HesaiPointCloudGPU` node which connect to a hesai lidar or use a PCAP
 Tested on linux with the PCAP playback only.
 
 ## Building
-Note : if you want the OrbbecPointCloud object to work from the editor, you will need to build the debug version.
 
 ### linux
 ```
