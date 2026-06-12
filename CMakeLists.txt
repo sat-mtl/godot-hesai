@@ -7,6 +7,9 @@ endif()
 set(LIBNAME "godot-hesai" CACHE STRING "The name of the library")
 set(GODOT_PROJECT_DIR "demo" CACHE STRING "The directory of a Godot project folder")
 
+# ??? (fix a windows compile issue maybe)
+set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
+
 find_package(Python3 3.4 REQUIRED)
 find_program(GIT git REQUIRED)
 
