@@ -21,13 +21,7 @@ class HesaiPointCloudGPU : public Node {
   static void _bind_methods();
 
  public:
-  // used to increment the PTC and UDP ports.
-  static inline int num_instances{};
 
-  static const int base_udp_port = 2368;
-  static const int base_ptc_port = 9347;
-
-  HesaiPointCloudGPU();
   ~HesaiPointCloudGPU() override;
 
   void _enter_tree() override;
@@ -68,9 +62,8 @@ class HesaiPointCloudGPU : public Node {
   int get_max_points();
 
  private:
-  // TODO : Change to LidarPointXYZI.
-  using PointType = hesai::lidar::LidarPointXYZICRT;
-  void start_stream_from_params(const hesai::lidar::DriverParam &param);
+  using PointType = hesai::lidar::LidarPointXYZI;
+  void start_stream_from_params(hesai::lidar::DriverParam &param);
   void allocate_point_cloud_buffer();
   void on_lidar_frame(const hesai::lidar::LidarDecodedFrame<PointType> &frame);
 
@@ -85,8 +78,8 @@ class HesaiPointCloudGPU : public Node {
   std::unique_ptr<hesai::lidar::HesaiLidarSdk<PointType>> sdk;
 
   // Properties
-  int udp_port{};
-  int ptc_port{};
+  int udp_port = 2368;
+  int ptc_port = 9347;
   // TODO someday: auto-include the correction files for at least the P40
   String correction_file_path = "";
   // this is enough for a P40. Need to validate that this value is high enough if using another model.

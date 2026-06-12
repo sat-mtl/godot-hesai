@@ -3,12 +3,6 @@
 #include <algorithm>
 #include <cstring>
 
-HesaiPointCloudGPU::HesaiPointCloudGPU() {
-  udp_port = base_udp_port + num_instances;
-  ptc_port = base_ptc_port + num_instances;
-  num_instances+=1;
-}
-
 void HesaiPointCloudGPU::_bind_methods() {
   ClassDB::bind_method(D_METHOD("start_stream", "device_ip"), &HesaiPointCloudGPU::start_stream);
   ClassDB::bind_method(D_METHOD("start_pcap_stream", "pcap_path"), &HesaiPointCloudGPU::start_pcap_stream);
@@ -90,8 +84,8 @@ void HesaiPointCloudGPU::start_stream(const String& lidar_ip) {
   param.input_param.source_type = hesai::lidar::DATA_FROM_LIDAR;
   param.input_param.device_ip_address = lidar_ip.utf8().get_data();
   param.input_param.udp_port = static_cast<uint16_t>(udp_port);
+  // param.input_param.device_udp_src_port = static_cast<uint16_t>(udp_port);
   param.input_param.ptc_port = static_cast<uint16_t>(ptc_port);
-  param.input_param.correction_file_path = correction_file_path.utf8().get_data();
   param.input_param.use_ptc_connected = false;
   start_stream_from_params(param);
 }
@@ -105,24 +99,30 @@ void HesaiPointCloudGPU::start_pcap_stream(const String& pcap_path) {
   hesai::lidar::DriverParam param;
   param.input_param.source_type = hesai::lidar::DATA_FROM_PCAP;
   param.input_param.pcap_path = pcap_path.utf8().get_data();
-  param.input_param.correction_file_path = correction_file_path.utf8().get_data();
   param.input_param.use_ptc_connected = false;
   param.decoder_param.pcap_play_in_loop = true;
   param.decoder_param.pcap_play_synchronization = true;
   start_stream_from_params(param);
 }
 
-void HesaiPointCloudGPU::start_stream_from_params(const hesai::lidar::DriverParam &param) {
+void HesaiPointCloudGPU::start_stream_from_params(hesai::lidar::DriverParam &param) {
   if (!point_buffer.is_valid()) {
     allocate_point_cloud_buffer();
   }
-
+  param.input_param.correction_file_path = correction_file_path.utf8().get_data();
+  param.input_param.recv_point_cloud_timeout = 5.0;
+  param.input_param.ptc_connect_timeout = 5.0;
   sdk = std::make_unique<hesai::lidar::HesaiLidarSdk<PointType>>();
   sdk->Init(param);
   sdk->RegRecvCallback([this](const hesai::lidar::LidarDecodedFrame<PointType> &frame) {
     on_lidar_frame(frame);
   });
   sdk->Start();
+  if (sdk->lidar_ptr_->GetInitFinish(FailInit)) {
+    print_line("failed to init hesai lidar");
+  } else {
+    print_line(sdk->lidar_ptr_->frame_.fParam.frame_frequency);
+  }
 }
 
 void HesaiPointCloudGPU::stop_stream() {
