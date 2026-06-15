@@ -17,7 +17,15 @@ git submodule update --recursive --init
 ```
 
 ### windows
-Untested.
+```
+git submodule update --recursive --init
+```
+In an admin cmd/powershell prompt
+```
+:: set BUILD_RELEASE=1 :: if you want to build release
+build_windows.cmd
+```
+
 
 ### LLM Disclaimer
 
