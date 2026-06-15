@@ -6,7 +6,7 @@ Exposes a `HesaiPointCloudGPU` node which connect to a hesai lidar or use a PCAP
 
 ## Current status
 
-Tested on linux with the PCAP playback only.
+Tested on linux and windows with a Pandar P40 and PCAP playback.
 
 ## Building
 
