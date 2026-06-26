@@ -28,6 +28,10 @@ void HesaiPointCloudGPU::_bind_methods() {
   ADD_SIGNAL(MethodInfo("point_cloud_frame",
                         PropertyInfo(Variant::RID, "point_cloud_buffer"),
                         PropertyInfo(Variant::PACKED_BYTE_ARRAY, "hesai_bytes")));
+  ADD_SIGNAL(MethodInfo("success_log", PropertyInfo(Variant::STRING, "log_text")));
+  ADD_SIGNAL(MethodInfo("error_log", PropertyInfo(Variant::STRING, "log_text")));
+  ADD_SIGNAL(MethodInfo("warning_log", PropertyInfo(Variant::STRING, "log_text")));
+
 
 }
 
@@ -54,7 +58,7 @@ void HesaiPointCloudGPU::_exit_tree() {
 
 void HesaiPointCloudGPU::allocate_point_cloud_buffer() {
   if (!rd) {
-    print_line("HesaiPointCloudGPU: set a rendering device before allocating the buffer.");
+    emit_signal("warning_log", "Not allocating buffer : please set a rendering device before starting a point cloud stream");
     return;
   }
 
@@ -67,7 +71,7 @@ void HesaiPointCloudGPU::allocate_point_cloud_buffer() {
 
   if (!rd->has_feature(RenderingDevice::Features::SUPPORTS_BUFFER_DEVICE_ADDRESS)) {
     point_buffer = rd->storage_buffer_create(gpu_bytes, empty);
-    print_line("HesaiPointCloudGPU: GPU does not support buffer device address.");
+    emit_signal("warning_log", "Your GPU doesn't support getting device address. You won't be able to access the point cloud buffer by its gpu address.");
   } else {
     point_buffer = rd->storage_buffer_create(gpu_bytes, empty, 0,
                                              RenderingDevice::BufferCreationBits::BUFFER_CREATION_DEVICE_ADDRESS_BIT);
@@ -76,7 +80,7 @@ void HesaiPointCloudGPU::allocate_point_cloud_buffer() {
 
 void HesaiPointCloudGPU::start_stream(const String& lidar_ip) {
   if (!rd) {
-    print_line("HesaiPointCloudGPU: set a rendering device before starting the stream.");
+    emit_signal("warning_log", "Not Starting stream: Please set a rendering device before starting a point cloud stream");
     return;
   }
 
@@ -92,7 +96,7 @@ void HesaiPointCloudGPU::start_stream(const String& lidar_ip) {
 
 void HesaiPointCloudGPU::start_pcap_stream(const String& pcap_path) {
   if (!rd) {
-    print_line("HesaiPointCloudGPU: set a rendering device before starting the stream.");
+    emit_signal("warning_log", "Not Starting stream: Please set a rendering device before starting a point cloud stream");
     return;
   }
 
@@ -110,8 +114,8 @@ void HesaiPointCloudGPU::start_stream_from_params(hesai::lidar::DriverParam &par
     allocate_point_cloud_buffer();
   }
   param.input_param.correction_file_path = correction_file_path.utf8().get_data();
-  param.input_param.recv_point_cloud_timeout = 5.0;
-  param.input_param.ptc_connect_timeout = 5.0;
+  param.input_param.recv_point_cloud_timeout = timeout;
+  param.input_param.ptc_connect_timeout = timeout;
   sdk = std::make_unique<hesai::lidar::HesaiLidarSdk<PointType>>();
   sdk->Init(param);
   sdk->RegRecvCallback([this](const hesai::lidar::LidarDecodedFrame<PointType> &frame) {
@@ -119,9 +123,9 @@ void HesaiPointCloudGPU::start_stream_from_params(hesai::lidar::DriverParam &par
   });
   sdk->Start();
   if (sdk->lidar_ptr_->GetInitFinish(FailInit)) {
-    print_line("failed to init hesai lidar");
+    emit_signal("error_log", "Couldn't start stream");
   } else {
-    print_line(sdk->lidar_ptr_->frame_.fParam.frame_frequency);
+    emit_signal("success_log", "Successfully Started stream");
   }
 }
 
