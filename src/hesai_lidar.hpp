@@ -84,4 +84,5 @@ class HesaiPointCloudGPU : public Node {
   String correction_file_path = "";
   // this is enough for a P40. Need to validate that this value is high enough if using another model.
   const int max_points = 100000;
+  const float timeout = 3.0;
 };
