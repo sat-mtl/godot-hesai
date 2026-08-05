@@ -17,5 +17,6 @@ else
 fi
 
 make -sC build -j"$(nproc)"
-
-cp build/bin/"${GODOTCPP_PLATFORM:-linux}"/godot-hesai.linux.template* ./bin/linux/ 2>/dev/null || true
+mkdir -p ./bin
+mkdir -p ./bin/linux
+cp build/godot-hesai.linux.template* ./bin/linux/
